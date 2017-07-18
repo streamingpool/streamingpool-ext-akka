@@ -1,0 +1,118 @@
+buildscript {
+    project.ext.CERN_VM = System.getProperty('CERN_TECHNET_VM') ?: System.getenv('CERN_TECHNET_VM') ?: false
+    project.ext.TRAVIS_CI = System.getProperty('TRAVIS') ?: System.getenv('TRAVIS') ?: false
+    project.ext.DEPLOYMENT = System.getProperty('deployment') ?: false
+    project.ext.VCS_TAG = System.getProperty('TRAVIS_TAG') ?: System.getenv('TRAVIS_TAG')
+    project.ext.POM = [
+            groupId   : 'org.streamingpool',
+            artifactId: 'streamingpool-ext-akka',
+            description: 'This project contains extensions taking advantage of akka features for Streaming Pool.'
+    ]
+    project.ext.INFO = [
+            repo: 'https://github.com/streamingpool/streamingpool-ext-akka.git',
+            url: 'http://www.streamingpool.org/',
+            github: 'https://github.com/streamingpool/streamingpool-ext-akka',
+            githubIssues: 'https://github.com/streamingpool/streamingpool-ext-akka/issues'
+    ]
+    project.ext.BINTRAY = [
+            repo: 'streamingpool-repos',
+            name: 'org.streamingpool:streamingpool-ext-akka',
+            organization: 'streamingpool',
+            userName: 'streamingpool-dev',
+            apiToken: System.getenv('BINTRAY_API_TOKEN')
+    ]
+    repositories {
+        if (CERN_VM) {
+            maven { url 'http://artifactory.cern.ch/repo' }
+            maven { url 'http://artifactory.cern.ch/jcenter' }
+        } else {
+            mavenCentral()
+            jcenter()
+        }
+    }
+    dependencies {
+        classpath 'com.netflix.nebula:nebula-publishing-plugin:5.1.0'
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'jacoco'
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'nebula.maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+repositories {
+    if (CERN_VM) {
+        maven { url 'http://artifactory.cern.ch/repo' }
+        maven { url 'http://artifactory.cern.ch/jcenter' }
+    } else {
+        mavenCentral()
+        jcenter()
+    }
+}
+
+if (DEPLOYMENT) {
+    println 'Applying deployment scripts'
+    apply from: './scripts/bintray-deploy.gradle'
+}
+
+group 'org.streamingpool'
+
+sourceCompatibility = 1.8
+
+dependencies {
+    compile 'org.streamingpool:streamingpool-core:+'
+
+    compile group: 'com.typesafe.akka', name: 'akka-stream_2.11', version:'2.5.3'
+    testCompile group: 'com.typesafe.akka', name: 'akka-stream-testkit_2.11', version:'2.5.3'
+
+    compile 'org.springframework:spring-core:4.3.9.RELEASE'
+    compile 'org.springframework:spring-context:4.3.9.RELEASE'
+
+    compile 'org.slf4j:slf4j-api:1.7.+'
+
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:2.8.+'
+    testCompile 'org.springframework:spring-test:4.3.9.RELEASE'
+    testCompile 'org.assertj:assertj-core:3.8.+'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/java'
+        }
+    }
+    test {
+        java {
+            srcDir 'src/test'
+        }
+    }
+}
+
+javadoc { options.encoding = "UTF-8" }
+
+task wrapper(type: Wrapper) { gradleVersion = '4.0' }
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts { archives javadocJar, sourcesJar }
+
+jacocoTestReport {
+    reports {
+        xml.enabled true
+        xml.destination new File("${buildDir}/reports/jacoco/report.xml")
+        html.enabled true
+        csv.enabled false
+    }
+}
