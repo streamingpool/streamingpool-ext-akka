@@ -1,2 +1,2 @@
 # streamingpool-ext-akka
-Streamingpool Extensions providing akka specific convenience methods
+Streamingpool Extensions providing akka specific functionality
