@@ -2,7 +2,7 @@
 /**
 *
 * This file is part of streaming pool (http://www.streamingpool.org).
-* 
+*
 * Copyright (c) 2017-present, CERN. All rights reserved.
 *
 * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
 * limitations under the License.
-* 
+*
 */
 // @formatter:on
 
@@ -25,9 +25,11 @@ package org.streamingpool.ext.akka.incubation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.streamingpool.core.service.DiscoveryService;
 import org.streamingpool.core.service.StreamId;
@@ -41,7 +43,9 @@ import akka.stream.Attributes;
 import akka.stream.Materializer;
 import akka.stream.javadsl.Source;
 import io.reactivex.Flowable;
+import io.reactivex.schedulers.Schedulers;
 
+@Ignore("Work in progress")
 public class AkkaIdSourceTest {
 
     private static final StreamId<Integer> STREAM_ID = new StreamId<Integer>() {
@@ -51,7 +55,7 @@ public class AkkaIdSourceTest {
         }
     };
 
-    private static final LocalPool SIMPLE_POOL = new LocalPool();
+    private static final LocalPool SIMPLE_POOL = new LocalPool(Collections.emptyList(), Schedulers.single());
 
     static {
         SIMPLE_POOL.provide(STREAM_ID, Flowable.range(0, 1000));
@@ -82,7 +86,7 @@ public class AkkaIdSourceTest {
         Source.fromGraph(sourceGraph).runForeach(i -> {
             results.add(i);
             latch.countDown();
-        }, materializer);
+        } , materializer);
 
         latch.await();
 
