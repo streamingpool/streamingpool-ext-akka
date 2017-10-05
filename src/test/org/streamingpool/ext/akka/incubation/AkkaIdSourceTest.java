@@ -31,6 +31,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
+import org.streamingpool.core.conf.PoolConfiguration;
 import org.streamingpool.core.service.DiscoveryService;
 import org.streamingpool.core.service.StreamId;
 import org.streamingpool.core.service.impl.LocalPool;
@@ -55,7 +56,8 @@ public class AkkaIdSourceTest {
         }
     };
 
-    private static final LocalPool SIMPLE_POOL = new LocalPool(Collections.emptyList(), Schedulers.single());
+    private static final LocalPool SIMPLE_POOL = new LocalPool(Collections.emptyList(),
+            new PoolConfiguration(Schedulers.single()));
 
     static {
         SIMPLE_POOL.provide(STREAM_ID, Flowable.range(0, 1000));
